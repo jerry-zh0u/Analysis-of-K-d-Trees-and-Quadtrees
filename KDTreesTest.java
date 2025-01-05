@@ -15,25 +15,15 @@ public class KDTreesTest {
         cur.add(new int[]{4, 5});
         cur.add(new int[]{3, 2});
         cur.add(new int[]{5, 4});
-
-        KDNode root = new KDNode(cur.get(0));
+        cur.add(new int[]{10, 3});
 
         for(int[] e : cur){
             test.insertNode(e);
         }
 
-        dfs.add(root);
-        while(!dfs.isEmpty()){
-            KDNode temp = dfs.pop();
-            if(temp == null){
-                // System.out.println(temp);
-                continue;
-            }
-            // System.out.println(Arrays.toString(temp.getVal()));
-            dfs.add(temp.getRight());
-            dfs.add(temp.getLeft());
-        }
+        test.getTree();
+
         System.out.println(test.findNode(new int[]{2, 3}));
-        System.out.println(Arrays.toString(test.nearestNeighbor(new int[]{1, 2}).getVal()));
+        // System.out.println(Arrays.toString(test.nearestNeighbor(new int[]{1, 2}).getVal()));
     }
 }
