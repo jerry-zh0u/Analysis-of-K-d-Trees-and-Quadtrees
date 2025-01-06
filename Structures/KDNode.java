@@ -24,6 +24,11 @@ public class KDNode{
     public void setRight(KDNode node){
         right = node;
     }
+    public void setVals(int[] val_){
+        for (int i = 0; i < val_.length; i++) {
+            val[i] = val_[i];
+        }
+    }
 
     //GETTER FUNCTIONS
     public int[] getVal(){
