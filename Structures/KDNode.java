@@ -4,17 +4,19 @@ public class KDNode{
     public static final int DIMENSIONS = 2;
 
     private KDNode left, right;
-    private int[] val;
+    private double[] val;
+    private int amt;
 
     //INIT
-    public KDNode(int[] val_){
-        val = new int[DIMENSIONS];
+    public KDNode(double[] val_){
+        val = new double[DIMENSIONS];
         for (int i = 0; i < DIMENSIONS; i++) {
             val[i] = val_[i];
         }
         
         left = null;
         right = null;
+        amt = 1;
     }
 
     //SETTER FUNCTIONS
@@ -24,14 +26,17 @@ public class KDNode{
     public void setRight(KDNode node){
         right = node;
     }
-    public void setVals(int[] val_){
+    public void setVals(double[] val_){
         for (int i = 0; i < val_.length; i++) {
             val[i] = val_[i];
         }
     }
+    public void setAmt(int val_){
+        amt = val_;
+    }
 
     //GETTER FUNCTIONS
-    public int[] getVal(){
+    public double[] getVal(){
         return val;
     }
     public KDNode getLeft(){
@@ -39,5 +44,8 @@ public class KDNode{
     }
     public KDNode getRight(){
         return right;
+    }
+    public int getAmt(){
+        return amt;
     }
 }   

@@ -9,7 +9,7 @@ public class KDTrees{
     private int op = 0;
 
     //KD TREE OPERATIONS
-    public void insertNode(int[] vals){
+    public void insertNode(double[] vals){
         if(findNode(vals)){ //IF IT ALREADY EXISTS YOU DON'T NEED TO ADD IT
             return;
         }
@@ -22,7 +22,7 @@ public class KDTrees{
 
         checkOp();
     }
-    public void deleteNode(int[] vals){
+    public void deleteNode(double[] vals){
         deleteNode(root, vals, 0);
         if(total == 0){
             root = null;
@@ -32,20 +32,31 @@ public class KDTrees{
         
         checkOp();
     }
-    public boolean findNode(int[] vals){
+    public boolean findNode(double[] vals){
         return findNode(root, vals, 0);
     }
-    public KDNode nearestNeighbor(int[] vals){
+    public KDNode nearestNeighbor(double[] vals){
         return nearestNeighbor(root, vals, null, Double.MAX_VALUE, 0);
+    }
+    public int rangeQuery(double[][] vals){
+        double[][] bounds = new double[KDNode.DIMENSIONS][2];
+        
+        for (int i = 0; i < bounds.length; i++) {
+            bounds[i][0] = findMin(root, 0, i)[i];
+            bounds[i][1] = findMax(root, 0, i)[i];
+        }
+
+        return rangeQuery(root, vals, bounds, 0);
     }
 
     //NODE INSERTION
-    private KDNode insertNode(KDNode node, int[] vals, int depth){
+    private KDNode insertNode(KDNode node, double[] vals, int depth){
         if(node == null){
             return new KDNode(vals);
         }
 
         int curDim = depth % KDNode.DIMENSIONS;
+        node.setAmt(node.getAmt() + 1);
 
         if(vals[curDim] <= node.getVal()[curDim]){
             node.setLeft(insertNode(node.getLeft(), vals, depth + 1));
@@ -57,7 +68,7 @@ public class KDTrees{
     }
 
     //NODE DELETION
-    private KDNode deleteNode(KDNode node, int[] vals, int depth){
+    private KDNode deleteNode(KDNode node, double[] vals, int depth){
         if(node == null){
             return null;
         }
@@ -69,13 +80,15 @@ public class KDTrees{
                 return null;
             }
             if(node.getLeft() == null){
-                int[] min = findMin(node.getRight(), depth + 1, curDim);
+                double[] min = findMin(node.getRight(), depth + 1, curDim);
                 node.setVals(min);
+                // node.setAmt(node.getAmt() - 1);
 
                 node.setRight(deleteNode(node.getRight(), min, depth + 1));
             }else{
-                int[] max = findMax(node.getLeft(), depth + 1, curDim);
+                double[] max = findMax(node.getLeft(), depth + 1, curDim);
                 node.setVals(max);
+                // node.setAmt(node.getAmt() - 1);;
 
                 node.setLeft(deleteNode(node.getLeft(), max, depth + 1));
             }   
@@ -86,11 +99,12 @@ public class KDTrees{
                 deleteNode(node.getRight(), vals, depth + 1);
             }
         }
+        node.setAmt(((node.getLeft() == null) ? 0 : node.getLeft().getAmt()) + ((node.getRight() == null) ? 0 : node.getRight().getAmt()) + 1);
         return node;
     }
 
     //NODE DETECTION
-    private boolean findNode(KDNode node, int[] vals, int depth){
+    private boolean findNode(KDNode node, double[] vals, int depth){
         if(node == null){
             return false;
         }
@@ -108,14 +122,12 @@ public class KDTrees{
     }
 
     //NEAREST NEIGHBOR
-    private KDNode nearestNeighbor(KDNode node, int[] vals, KDNode bestNode, double bestDist, int depth){        
+    private KDNode nearestNeighbor(KDNode node, double[] vals, KDNode bestNode, double bestDist, int depth){        
         if(node == null){
             return bestNode;
         }
 
         double curDist = eucDistance(node.getVal(), vals);
-
-        // System.out.println(Arrays.toString(node.getVal()) + " " + bestDist + " " + curDist + " " + Arrays.toString(vals));
 
         if(bestNode == null || curDist < bestDist){
             bestNode = node;
@@ -143,9 +155,43 @@ public class KDTrees{
     }
     
     //RANGE QUERIES
+    private int rangeQuery(KDNode node, double[][] vals, double[][] bounds, int depth){
+        if(node == null){
+            return 0;
+        }
+
+        int count = 0;
+        int curDim = depth % KDNode.DIMENSIONS;
+
+        if(contains(bounds, vals)){
+            return node.getAmt();
+        }
+        
+        //CHECK YOUR LEFT
+        if(vals[curDim][0] <= node.getVal()[curDim]){
+            double original = bounds[curDim][1];
+            bounds[curDim][1] = node.getVal()[curDim];
+            count += rangeQuery(node.getLeft(), vals, bounds, depth + 1);
+            bounds[curDim][1] = original;
+        }
+
+        //CHECK YOUR RIGHT
+        if(node.getVal()[curDim] < vals[curDim][1]){
+            double original = bounds[curDim][0];
+            bounds[curDim][0] = node.getVal()[curDim] + 1;
+            count += rangeQuery(node.getRight(), vals, bounds, depth + 1);
+            bounds[curDim][0] = original;
+        }
+
+        //CHECK YOUR NODE
+        if(contains(node.getVal(), vals)){
+            count++;
+        }
+        return count;
+    }
 
     //HELPER FUNCTIONS
-    private boolean isEquals(int[] a, int[] b){
+    private boolean isEquals(double[] a, double[] b){
         assert a.length == b.length;
         
         for (int i = 0; i < a.length; i++) {
@@ -155,7 +201,7 @@ public class KDTrees{
         }
         return true;
     }
-    private double eucDistance(int[] a, int[] b){
+    private double eucDistance(double[] a, double[] b){
         assert a.length == b.length;
 
         double dist = 0;
@@ -165,8 +211,8 @@ public class KDTrees{
         dist = Math.sqrt(dist);
         return dist;
     }
-    private List<int[]> collectPoints(){
-        ArrayList<int[]> cur = new ArrayList<>();
+    private List<double[]> collectPoints(){
+        ArrayList<double[]> cur = new ArrayList<>();
         Stack<KDNode> dfs = new Stack<>();
             dfs.add(root);
 
@@ -184,21 +230,21 @@ public class KDTrees{
 
         return cur;
     }
-    private KDNode rebalanceTree(List<int[]> points, int depth){
+    private KDNode rebalanceTree(List<double[]> points, int depth){
         if(points.isEmpty()){
             return null;
         }
 
         int medianIdx = points.size()/2;
 
-        int[] medianPoint = quickSelect(points, medianIdx, depth);
+        double[] medianPoint = quickSelect(points, medianIdx, depth);
         KDNode median = new KDNode(medianPoint);
         int curDim = depth % KDNode.DIMENSIONS;
 
-        List<int[]> leftPoints = new ArrayList<>();
-        List<int[]> rightPoints = new ArrayList<>();
+        List<double[]> leftPoints = new ArrayList<>();
+        List<double[]> rightPoints = new ArrayList<>();
         
-        for(int[] e : points){
+        for(double[] e : points){
             if(isEquals(e, median.getVal())){
                 continue;
             }
@@ -214,21 +260,22 @@ public class KDTrees{
 
         median.setLeft(left);
         median.setRight(right);
+        median.setAmt(leftPoints.size() + rightPoints.size() + 1);
 
         return median;
     }
-    private int[] quickSelect(List<int[]> points, int k, int depth){
+    private double[] quickSelect(List<double[]> points, int k, int depth){
         if(points.size() == 1){
             return points.get(0);
         }
 
-        int[] pivot = points.get(points.size()/2);
+        double[] pivot = points.get(points.size()/2);
         int curDim = depth % KDNode.DIMENSIONS;
-        List<int[]> lowPoints = new ArrayList<>();
-        List<int[]> highPoints = new ArrayList<>();
-        List<int[]> equalPoints = new ArrayList<>();
+        List<double[]> lowPoints = new ArrayList<>();
+        List<double[]> highPoints = new ArrayList<>();
+        List<double[]> equalPoints = new ArrayList<>();
 
-        for(int[] e : points){
+        for(double[] e : points){
             if(e[curDim] < pivot[curDim]){
                 lowPoints.add(e);
             }else if(e[curDim] == pivot[curDim]){
@@ -245,7 +292,7 @@ public class KDTrees{
             return quickSelect(highPoints, k - lowPoints.size() - equalPoints.size(), depth);
         }
     }
-    private int[] findMax(KDNode node, int depth, int axis){
+    private double[] findMax(KDNode node, int depth, int axis){
         int curDim = depth % KDNode.DIMENSIONS;
 
         if(node == null){
@@ -253,19 +300,19 @@ public class KDTrees{
         }
         if(curDim == axis){
             if(node.getRight() == null){
-                return null;
+                return node.getVal();
             }else{
                 return findMax(node.getRight(), depth + 1, axis);
             }
         }else{
-            int[] leftMax = findMax(node.getLeft(), depth + 1, axis);
-            int[] rightMax = findMax(node.getRight(), depth + 1, axis);
-            int[] curMax = node.getVal();
+            double[] leftMax = findMax(node.getLeft(), depth + 1, axis);
+            double[] rightMax = findMax(node.getRight(), depth + 1, axis);
+            double[] curMax = node.getVal();
 
             return maxPoint(maxPoint(leftMax, rightMax, axis), curMax, axis);
         }
     }
-    private int[] findMin(KDNode node, int depth, int axis){
+    private double[] findMin(KDNode node, int depth, int axis){
         int curDim = depth % KDNode.DIMENSIONS;
 
         if(node == null){
@@ -273,19 +320,19 @@ public class KDTrees{
         }
         if(curDim == axis){
             if(node.getLeft() == null){
-                return null;
+                return node.getVal();
             }else{
-                return findMax(node.getLeft(), depth + 1, axis);
+                return findMin(node.getLeft(), depth + 1, axis);
             }
         }else{
-            int[] leftMax = findMin(node.getLeft(), depth + 1, axis);
-            int[] rightMax = findMin(node.getRight(), depth + 1, axis);
-            int[] curMax = node.getVal();
+            double[] leftMin = findMin(node.getLeft(), depth + 1, axis);
+            double[] rightMin = findMin(node.getRight(), depth + 1, axis);
+            double[] curMin = node.getVal();
 
-            return minPoint(minPoint(leftMax, rightMax, axis), curMax, axis);
+            return minPoint(minPoint(leftMin, rightMin, axis), curMin, axis);
         }
     }
-    private int[] maxPoint(int[] a, int[] b, int axis){
+    private double[] maxPoint(double[] a, double[] b, int axis){
         if(a == null){
             return b;
         }else if(b == null){
@@ -297,7 +344,7 @@ public class KDTrees{
             return b;
         }
     }
-    private int[] minPoint(int[] a, int[] b, int axis){
+    private double[] minPoint(double[] a, double[] b, int axis){
         if(a == null){
             return b;
         }else if(b == null){
@@ -311,11 +358,27 @@ public class KDTrees{
     }
     private void checkOp(){
         if(op % KDNode.DIMENSIONS == 0){
-            List<int[]> points = collectPoints();
+            List<double[]> points = collectPoints();
             root = rebalanceTree(points, 0);
         }
     }
-    
+    private boolean contains(double[][] a, double[][] b){ //IF A FOLLOWS ALL THE VALUES OF B
+        for (int i = 0; i < a.length; i++) {
+            if(!(b[i][0] <= a[i][0] && a[i][1] <= b[i][1])){
+                return false;
+            }
+        }
+        return true;
+    }
+    private boolean contains(double[] a, double[][] b){
+        for (int i = 0; i < b.length; i++) {
+            if(!(b[i][0] <= a[i] && a[i] <= b[i][1])){
+                return false;
+            }
+        }
+        return true;
+    }
+
     //TESTING PURPOSES
     public void getTree(){
         Stack<KDNode> cur = new Stack<>();
@@ -327,7 +390,7 @@ public class KDTrees{
                 continue;
             }
 
-            System.out.println(Arrays.toString(node.getVal()));
+            System.out.println(Arrays.toString(node.getVal()) + " " + node.getAmt());
             cur.add(node.getRight());
             cur.add(node.getLeft());
         }
