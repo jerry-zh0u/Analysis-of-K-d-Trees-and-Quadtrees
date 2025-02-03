@@ -14,13 +14,36 @@ public class Test {
         tree.insertNode(new double[]{1, 1});
         tree.insertNode(new double[]{-1, 1});
         tree.insertNode(new double[]{1, -1});
+        // tree.insertNode(new double[]{-1, -1});
+        // tree.insertNode(new double[]{2, 2});
+        tree.insertNode(new double[]{2, -2});
+
+
+        tree.deleteNode(new double[]{-1, 1});
+
+        for(double[] e : tree.root.getVal()){
+            System.out.println(Arrays.toString(e));
+        }
+
+        for(QuadNode e : tree.root.getChildren()){
+            if(e == null){
+                System.out.println();
+                continue;
+            }
+            for(double[] e1 : e.getVal()){
+                System.out.print(Arrays.toString(e1));
+            }
+            System.out.println();
+        }
 
         // System.out.println(tree.root.getVal().size());
-        System.out.println(tree.root.getDivide());
+
+        // System.out.println(tree.root.getVal().size());
+        // System.out.println(tree.root.getDivide());
 
         // tree.insertNode(new double[]{-1, -1});
 
-        System.out.println(tree.root.getDivide() + " " + Arrays.toString(tree.root.getRect()));
+        // System.out.println(tree.root.getDivide() + " " + Arrays.toString(tree.root.getRect()));
 
         // for(QuadNode e : tree.root.getChildren()){
         //     System.out.println("==" + e + " " + Arrays.toString(e.getRect()));

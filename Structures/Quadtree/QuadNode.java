@@ -33,8 +33,14 @@ public class QuadNode {
     public void addVal(double[] val_){
         val.add(val_);
     }
-    public void divide(){
+    public void setDivideTrue(){
         divide = true;
+    }
+    public void setDivideFalse(){
+        divide = true;
+    }
+    public void clearVal(){
+        val = new ArrayList<>();
     }
 
     public ArrayList<double[]> getVal(){

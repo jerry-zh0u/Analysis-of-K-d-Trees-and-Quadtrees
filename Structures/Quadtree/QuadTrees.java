@@ -1,12 +1,17 @@
 package Structures.Quadtree;
 
+import java.util.ArrayList;
+
 public class QuadTrees {
     private static final double MAX_BOUND_X = 100;
     private static final double MAX_BOUND_Y = 100;
+
+    //ADDED FOR CONVIENCE: USED TO DISTINGUISH BETWEEN THE DIFFERENT SIDES OF THE RECTANGLE FOR THE SUBDIVISION
     private static final int[] regionXIdx = {0, 2, 2, 0};
     private static final int[] regionYIdx = {1, 1, 3, 3};
 
     public QuadNode root;
+    private int total = 0;
 
     //QUADTREE OPERATIONS
     public void insertNode(double[] vals){
@@ -17,6 +22,12 @@ public class QuadTrees {
         }
 
         insertNode(root, vals);
+    }
+    public void deleteNode(double[] vals){
+        if(root == null || !contains(root, vals)){
+            return;
+        }
+        deleteNode(root, null, vals);
     }
 
     //QUADTREE OPERATIONS
@@ -30,17 +41,59 @@ public class QuadTrees {
             return;
         }
 
+        double[] mids = getMid(node);
         double[] rect = node.getRect();
-        double xMid = (rect[0] + rect[2])/2;
-        double yMid = (rect[1] + rect[3])/2;
 
         if(!node.getDivide()){
-            node.divide();
+            node.setDivideTrue();
             for (double[] e : node.getVal()) {
-                add(xMid, yMid, e, rect, node);
+                add(mids[0], mids[1], e, rect, node);
             }
         }
-        add(xMid, yMid, vals, rect, node);
+        add(mids[0], mids[1], vals, rect, node);
+    }
+    private QuadNode deleteNode(QuadNode node, QuadNode par, double[] vals){
+        if(node == null){
+            return null;
+        }
+
+        int contain = contains(node.getVal(), vals);
+
+        if(contain != -1 && !node.getDivide()){
+            node.getVal().remove(contain);
+            if(par != null){
+                int sum = 0;
+                for(QuadNode e : par.getChildren()){
+                    if(e == null){
+                        continue;
+                    }
+                    sum += e.getVal().size();
+                }
+                if(sum <= QuadNode.CAPACITY){
+                    par.setDivideFalse();
+                    par.clearVal();
+                    for(QuadNode e1 : par.getChildren()){
+                        if(e1 == null){
+                            continue;
+                        }
+                        for(double[] e2 : e1.getVal()){
+                            par.addVal(e2);
+                        }
+                        e1.clearVal();
+                    }
+                }
+            }
+        }else{
+            if(contain != -1){
+                node.getVal().remove(contain);
+            }
+
+            double[] mids = getMid(node);
+            int idx = findRegion(vals, mids[0], mids[1]);
+
+            deleteNode(node.getChildren()[idx], node, vals);
+        }
+        return node;
     }
 
     //HELPER FUNCTIONS
@@ -73,5 +126,34 @@ public class QuadTrees {
         }else{
             return 3;
         }
+    }
+
+    private int contains(ArrayList<double[]> arr, double[] vals){
+        for (int i = 0; i < arr.size(); i++) {
+            if(arr.get(i)[0] == vals[0] && arr.get(i)[1] == vals[1]){
+                return i;
+            }
+        }
+        return -1;
+    }
+    private boolean contains(QuadNode node, double[] vals){
+        if(node == null){
+            return false;
+        }
+        if(contains(node.getVal(), vals) != -1){
+            return true;
+        }else{
+            double[] mids = getMid(node);
+            int idx = findRegion(vals, mids[0], mids[1]);
+
+            return contains(node.getChildren()[idx], vals);
+        }
+    }
+
+    private double[] getMid(QuadNode node){
+        double[] rect = node.getRect();
+        double xMid = (rect[0] + rect[2])/2;
+        double yMid = (rect[1] + rect[3])/2;
+        return new double[]{xMid, yMid};
     }
 }

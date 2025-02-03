@@ -4,7 +4,7 @@ import java.util.*;
 import java.io.*;
 
 public class KDTrees{  
-    public KDNode root;  
+    private KDNode root;  
     private int total = 0;
     private int op = 0;
 
@@ -23,6 +23,9 @@ public class KDTrees{
         checkOp();
     }
     public void deleteNode(double[] vals){
+        if(!findNode(vals)){
+            return;
+        }
         deleteNode(root, vals, 0);
         if(total == 1){
             root = null;
