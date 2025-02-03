@@ -1,4 +1,4 @@
-package Structures;
+package Structures.KDTree;
 
 public class KDNode{
     public static final int DIMENSIONS = 2;

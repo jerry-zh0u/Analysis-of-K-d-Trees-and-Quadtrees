@@ -1,10 +1,10 @@
-package Structures;
+package Structures.KDTree;
 
 import java.util.*;
 import java.io.*;
 
 public class KDTrees{  
-    private KDNode root;  
+    public KDNode root;  
     private int total = 0;
     private int op = 0;
 
@@ -24,7 +24,7 @@ public class KDTrees{
     }
     public void deleteNode(double[] vals){
         deleteNode(root, vals, 0);
-        if(total == 0){
+        if(total == 1){
             root = null;
         }
         total--;
@@ -82,14 +82,12 @@ public class KDTrees{
             if(node.getLeft() == null){
                 double[] min = findMin(node.getRight(), depth + 1, curDim);
                 node.setVals(min);
-                // node.setAmt(node.getAmt() - 1);
 
                 node.setRight(deleteNode(node.getRight(), min, depth + 1));
             }else{
                 double[] max = findMax(node.getLeft(), depth + 1, curDim);
                 node.setVals(max);
-                // node.setAmt(node.getAmt() - 1);;
-
+                
                 node.setLeft(deleteNode(node.getLeft(), max, depth + 1));
             }   
         }else{
