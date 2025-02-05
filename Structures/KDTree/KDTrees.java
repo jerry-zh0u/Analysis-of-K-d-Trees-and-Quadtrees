@@ -38,8 +38,8 @@ public class KDTrees{
     public boolean findNode(double[] vals){
         return findNode(root, vals, 0);
     }
-    public KDNode nearestNeighbor(double[] vals){
-        return nearestNeighbor(root, vals, null, Double.MAX_VALUE, 0);
+    public double[] nearestNeighbor(double[] vals){
+        return nearestNeighbor(root, vals, null, Double.MAX_VALUE, 0).getVal();
     }
     public int rangeQuery(double[][] vals){
         double[][] bounds = new double[KDNode.DIMENSIONS][2];

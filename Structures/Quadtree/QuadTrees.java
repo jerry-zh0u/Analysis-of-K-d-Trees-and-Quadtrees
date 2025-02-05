@@ -29,12 +29,17 @@ public class QuadTrees {
         }
         deleteNode(root, null, vals);
     }
+    public double[] nearestNeighbor(double[] vals){
+        return nearestNeighbor(root, vals, null, Double.MAX_VALUE);
+    }
 
     //QUADTREE OPERATIONS
     private void insertNode(QuadNode node, double[] vals){
         if(!inBounds(node.getRect(), vals)){
             return;
         }
+
+        node.setAmt(node.getAmt() + 1);
 
         if(node.getVal().size() < QuadNode.CAPACITY){
             node.addVal(vals);
@@ -93,8 +98,84 @@ public class QuadTrees {
 
             deleteNode(node.getChildren()[idx], node, vals);
         }
+        int sum = 0;
+        for(QuadNode e : node.getChildren()){
+            if(e == null || e.getVal().size() > 0){
+                sum += e.getAmt();
+            }
+        }  
+        node.setAmt(sum);
         return node;
     }
+    private double[] nearestNeighbor(QuadNode node, double[] vals, double[] bestNode, double bestDist){
+        if(node == null){
+            return bestNode;
+        }
+
+        double[] curBest = minEucDist(node.getVal(), vals);
+        double curDis = eucDist(curBest, vals);
+
+        if(bestNode == null || curDis < bestDist){
+            bestNode = curBest;
+            bestDist = curDis;
+        }
+
+        if(!node.getDivide()){
+            return bestNode;
+        }
+
+        double[] rect = node.getRect();
+        double xMid = (rect[0] + rect[2])/2; double yMid = (rect[1] + rect[3])/2;
+        int idx = findRegion(vals, xMid, yMid);
+
+        bestNode = nearestNeighbor(node.getChildren()[idx], vals, bestNode, bestDist);
+
+        if(idx == 0){
+            if(Math.abs(xMid - vals[0]) < bestDist){
+                bestNode = nearestNeighbor(node.getChildren()[1], vals, bestNode, bestDist);
+            }
+            if(Math.abs(yMid - vals[1]) < bestDist){
+                bestNode = nearestNeighbor(node.getChildren()[3], vals, bestNode, bestDist);
+            }
+            if(Math.abs(yMid - vals[1]) < bestDist || Math.abs(xMid - vals[0]) < bestDist){
+                bestNode = nearestNeighbor(node.getChildren()[2], vals, bestNode, bestDist);
+            }
+        }else if(idx == 1){
+            if(Math.abs(xMid - vals[0]) < bestDist){
+                bestNode = nearestNeighbor(node.getChildren()[0], vals, bestNode, bestDist);
+            }
+            if(Math.abs(yMid - vals[1]) < bestDist){
+                bestNode = nearestNeighbor(node.getChildren()[2], vals, bestNode, bestDist);
+            }
+            if(Math.abs(yMid - vals[1]) < bestDist || Math.abs(xMid - vals[0]) < bestDist){
+                bestNode = nearestNeighbor(node.getChildren()[3], vals, bestNode, bestDist);
+            }
+        }else if(idx == 2){
+            if(Math.abs(xMid - vals[0]) < bestDist){
+                bestNode = nearestNeighbor(node.getChildren()[3], vals, bestNode, bestDist);
+            }
+            if(Math.abs(yMid - vals[1]) < bestDist){
+                bestNode = nearestNeighbor(node.getChildren()[1], vals, bestNode, bestDist);
+            }
+            if(Math.abs(yMid - vals[1]) < bestDist || Math.abs(xMid - vals[0]) < bestDist){
+                bestNode = nearestNeighbor(node.getChildren()[0], vals, bestNode, bestDist);
+            }
+        }else{
+            if(Math.abs(xMid - vals[0]) < bestDist){
+                bestNode = nearestNeighbor(node.getChildren()[2], vals, bestNode, bestDist);
+            }
+            if(Math.abs(yMid - vals[1]) < bestDist){
+                bestNode = nearestNeighbor(node.getChildren()[0], vals, bestNode, bestDist);
+            }
+            if(Math.abs(yMid - vals[1]) < bestDist || Math.abs(xMid - vals[0]) < bestDist){
+                bestNode = nearestNeighbor(node.getChildren()[1], vals, bestNode, bestDist);
+            }
+        }
+        return bestNode;
+    }
+    // private int rangeQuery(){
+
+    // }
 
     //HELPER FUNCTIONS
     private boolean inBounds(double[] rect, double[] vals){
@@ -149,11 +230,30 @@ public class QuadTrees {
             return contains(node.getChildren()[idx], vals);
         }
     }
-
     private double[] getMid(QuadNode node){
         double[] rect = node.getRect();
         double xMid = (rect[0] + rect[2])/2;
         double yMid = (rect[1] + rect[3])/2;
         return new double[]{xMid, yMid};
+    }
+    private double[] minEucDist(ArrayList<double[]> points, double[] val){
+        double minDist = Double.MAX_VALUE;
+        int idx = 0;
+        for(int i = 0; i < points.size(); i++){
+            double curDist = eucDist(points.get(i), val);
+            if(curDist < minDist){
+                minDist = curDist;
+                idx = i;
+            }
+        }
+        return points.get(idx);
+    }
+    private double eucDist(double[] p1, double[] p2){
+        double dist = 0;
+        for (int i = 0; i < p1.length; i++) {
+            dist += (p1[i] - p2[i]) * (p1[i] - p2[i]);
+        }
+        dist = Math.sqrt(dist);
+        return dist;
     }
 }

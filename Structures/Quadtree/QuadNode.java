@@ -11,6 +11,7 @@ public class QuadNode {
     private double length, height;
     private boolean divide;
     private QuadNode[] children;
+    private int amt;
         
     public QuadNode(double[] center_, double length_, double height_){        
         rect = new double[]{
@@ -42,6 +43,9 @@ public class QuadNode {
     public void clearVal(){
         val = new ArrayList<>();
     }
+    public void setAmt(int x){
+        amt = x;
+    }
 
     public ArrayList<double[]> getVal(){
         return val;
@@ -60,5 +64,8 @@ public class QuadNode {
     }
     public boolean getDivide(){
         return divide;
+    }
+    public int getAmt(){
+        return amt;
     }
 }
