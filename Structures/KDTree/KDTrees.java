@@ -4,6 +4,8 @@ import java.util.*;
 import java.io.*;
 
 public class KDTrees{  
+    public static final int CHECKPOINT = 10;
+
     private KDNode root;  
     private int total = 0;
     private int op = 0;
@@ -20,7 +22,7 @@ public class KDTrees{
         op++;
         total++;
 
-        checkOp();
+        // checkOp();
     }
     public void deleteNode(double[] vals){
         if(!findNode(vals)){
@@ -33,7 +35,7 @@ public class KDTrees{
         total--;
         op++;
         
-        checkOp();
+        // checkOp();
     }
     public boolean findNode(double[] vals){
         return findNode(root, vals, 0);
@@ -148,9 +150,11 @@ public class KDTrees{
         }
 
         bestNode = nearestNeighbor(branchOne, vals, bestNode, bestDist, depth + 1);
+        bestDist = eucDistance(vals, bestNode.getVal());
 
         if(Math.abs(node.getVal()[curDim] - vals[curDim]) < bestDist){
             bestNode = nearestNeighbor(branchTwo, vals, bestNode, bestDist, depth + 1);
+            bestDist = eucDistance(vals, bestNode.getVal());
         }
         return bestNode;
     }
@@ -177,7 +181,7 @@ public class KDTrees{
         }
 
         //CHECK YOUR RIGHT
-        if(node.getVal()[curDim] < vals[curDim][1]){
+        if(node.getVal()[curDim] <= vals[curDim][1]){
             double original = bounds[curDim][0];
             bounds[curDim][0] = node.getVal()[curDim] + 1;
             count += rangeQuery(node.getRight(), vals, bounds, depth + 1);
@@ -202,7 +206,7 @@ public class KDTrees{
         }
         return true;
     }
-    private double eucDistance(double[] a, double[] b){
+    public double eucDistance(double[] a, double[] b){
         assert a.length == b.length;
 
         double dist = 0;
@@ -238,9 +242,9 @@ public class KDTrees{
 
         int medianIdx = points.size()/2;
 
-        double[] medianPoint = quickSelect(points, medianIdx, depth);
-        KDNode median = new KDNode(medianPoint);
         int curDim = depth % KDNode.DIMENSIONS;
+        double[] medianPoint = quickSelect(points, medianIdx, curDim);
+        KDNode median = new KDNode(medianPoint);
 
         List<double[]> leftPoints = new ArrayList<>();
         List<double[]> rightPoints = new ArrayList<>();
@@ -265,13 +269,12 @@ public class KDTrees{
 
         return median;
     }
-    private double[] quickSelect(List<double[]> points, int k, int depth){
+    private double[] quickSelect(List<double[]> points, int k, int curDim){
         if(points.size() == 1){
             return points.get(0);
         }
 
         double[] pivot = points.get(points.size()/2);
-        int curDim = depth % KDNode.DIMENSIONS;
         List<double[]> lowPoints = new ArrayList<>();
         List<double[]> highPoints = new ArrayList<>();
         List<double[]> equalPoints = new ArrayList<>();
@@ -286,11 +289,11 @@ public class KDTrees{
             }
         }
         if(k < lowPoints.size()){
-            return quickSelect(lowPoints, k, depth + 1);
+            return quickSelect(lowPoints, k, curDim);
         }else if(k < lowPoints.size() + equalPoints.size()){
             return pivot;
         }else{
-            return quickSelect(highPoints, k - lowPoints.size() - equalPoints.size(), depth);
+            return quickSelect(highPoints, k - lowPoints.size() - equalPoints.size(), curDim);
         }
     }
     private double[] findMax(KDNode node, int depth, int axis){
@@ -358,7 +361,7 @@ public class KDTrees{
         }
     }
     private void checkOp(){
-        if(op % KDNode.DIMENSIONS == 0){
+        if(op % CHECKPOINT == 0){
             List<double[]> points = collectPoints();
             root = rebalanceTree(points, 0);
         }
@@ -379,8 +382,6 @@ public class KDTrees{
         }
         return true;
     }
-
-    //TESTING PURPOSES
     public void getTree(){
         Stack<KDNode> cur = new Stack<>();
             cur.add(root);

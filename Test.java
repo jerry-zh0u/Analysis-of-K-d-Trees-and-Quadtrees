@@ -7,73 +7,76 @@ import java.util.*;
 import java.io.*;
 
 public class Test {
-    public static void main(String[] args) {
-        QuadTrees tree = new QuadTrees();
+    public static void main(String[] args) throws IOException{
+        BufferedReader r = new BufferedReader(new FileReader("data.out"));
+        PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter("output.out")));
 
-        tree.insertNode(new double[]{0, 0});
-        tree.insertNode(new double[]{1, 1});
-        tree.insertNode(new double[]{-1, 1});
-        tree.insertNode(new double[]{1, -1});
-        tree.insertNode(new double[]{5, 4});
-        tree.insertNode(new double[]{10, 6});
-        tree.insertNode(new double[]{4.7, 9});
+        QuadTrees quadTree = new QuadTrees();
+        KDTrees kdTree = new KDTrees();
 
-        System.out.println(Arrays.toString(tree.nearestNeighbor(new double[]{-10, -10})));
-        // tree.insertNode(new double[]{-1, -1});
-        // tree.insertNode(new double[]{2, 2});
-        // tree.insertNode(new double[]{2, -2});
+        double quadTreeTime = 0;
+        double kdTreeTime = 0;
+        
+        for (int i = 0; i < RandomGenerator.ADDOPERATIONS; i++) {
+            StringTokenizer st = new StringTokenizer(r.readLine());
+            double[] points = new double[]{Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken())};
 
+            // double curTime = System.nanoTime();
+            quadTree.insertNode(points);
+            // quadTreeTime += System.nanoTime() - curTime;
 
-        // tree.deleteNode(new double[]{-1, 1});
+            // curTime = System.nanoTime();
+            kdTree.insertNode(points);
+            // kdTreeTime += System.nanoTime() - curTime;
 
-        // for(double[] e : tree.root.getVal()){
-        //     System.out.println(Arrays.toString(e));
-        // }
+            // pw.println((i + 1) + " " + quadTreeTime + " " + kdTreeTime);
+        }
 
-        // for(QuadNode e : tree.root.getChildren()){
-        //     if(e == null){
-        //         System.out.println();
-        //         continue;
-        //     }
-        //     for(double[] e1 : e.getVal()){
-        //         System.out.print(Arrays.toString(e1));
-        //     }
-        //     System.out.println();
-        // }
+        for (int i = 0; i < RandomGenerator.DELETIONOPERATIONS; i++) {
+            StringTokenizer st = new StringTokenizer(r.readLine());
+            double[] points = new double[]{Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken())};
 
-        // System.out.println(tree.root.getVal().size());
+            // double curTime = System.nanoTime();
+            quadTree.deleteNode(points);
+            // quadTreeTime += System.nanoTime() - curTime;
 
-        // System.out.println(tree.root.getVal().size());
-        // System.out.println(tree.root.getDivide());
+            // curTime = System.nanoTime();
+            kdTree.deleteNode(points);
+            // kdTreeTime += System.nanoTime() - curTime;
 
-        // tree.insertNode(new double[]{-1, -1});
+            // pw.println((i + 1) + " " + quadTreeTime + " " + kdTreeTime);
+        }
 
-        // System.out.println(tree.root.getDivide() + " " + Arrays.toString(tree.root.getRect()));
+        for (int i = 0; i < RandomGenerator.NNADDOPERATIONS; i++) {
+            StringTokenizer st = new StringTokenizer(r.readLine());
+            double[] points = new double[]{Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken())};
 
-        // for(QuadNode e : tree.root.getChildren()){
-        //     System.out.println("==" + e + " " + Arrays.toString(e.getRect()));
-        //     for(double[] e1 : e.getVal()){
-        //         System.out.print(Arrays.toString(e1));
-        //     }
-        //     System.out.println();
-        // }
+            // double curTime = System.nanoTime();
+            quadTree.nearestNeighbor(points);
+            // quadTreeTime += System.nanoTime() - curTime;
 
-        // System.out.println(Arrays.toString(tree.root.getChildren()[0].getRect()));
-        // System.out.println(Arrays.toString(tree.root.getChildren()[1].getVal()));
-        // System.out.println(Arrays.toString(tree.root.getChildren()[2].getVal()));
-        // System.out.println(Arrays.toString(tree.root.getChildren()[3].getVal()));
+            // curTime = System.nanoTime();
+            kdTree.nearestNeighbor(points);
+            // kdTreeTime += System.nanoTime() - curTime;
 
-        // tree.insertNode(new double[]{-2, 2});
+            // pw.println((i + 1) + " " + quadTreeTime + " " + kdTreeTime);
+        }
 
-        // System.out.println(Arrays.toString(tree.root.getChildren()[0].getChildren()));
-        // KDTrees tree = new KDTrees();
+        for (int i = 0; i < RandomGenerator.RNGQOPERATIONS; i++) {
+            StringTokenizer st = new StringTokenizer(r.readLine());
+            double[][] query = new double[][]{{Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken())}, {Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken())}};
 
-        // tree.insertNode(new double[]{0, 0});
+            double curTime = System.nanoTime();
+            quadTree.rangeQuery(query);
+            quadTreeTime += System.nanoTime() - curTime;
 
-        // System.out.println(tree.root);
+            curTime = System.nanoTime();
+            kdTree.rangeQuery(query);
+            kdTreeTime += System.nanoTime() - curTime;
 
-        // tree.deleteNode(new double[]{0, 0});
+            pw.println((i + 1) + " " + quadTreeTime + " " + kdTreeTime);
+        }
 
-        // System.out.println(tree.root);
+        pw.close();
     }
 }

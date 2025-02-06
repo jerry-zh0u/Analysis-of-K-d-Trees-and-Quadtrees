@@ -26,6 +26,8 @@ public class QuadNode {
         divide = false;
 
         children = new QuadNode[4];
+
+        // amt = 1;
     }
     
     public void setChildren(QuadNode node, int idx){
